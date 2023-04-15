@@ -22,14 +22,14 @@ COPY rpm_list /rpm_list
 RUN rpm -qa --queryformat '/^%{NAME}$/ d\n' > rpm_fix.sed && \
     sed -f rpm_fix.sed /rpm_list > /rpm_list.clean
 
+# "On Rocky Linux 8, MySQL version 8 is available from the default repositories."
+# https://www.digitalocean.com/community/tutorials/how-to-install-mysql-on-rocky-linux-8
 # RUN yum -y -q install https://dev.mysql.com/get/mysql-community-release-el7-5.noarch.rpm && \
 # 	yum -y -q install epel-release  && \
 # 	yum -y -q install `cat /rpm_list.clean` && \
 #     yum clean all
 
-# RUN dnf config-manager --disable mysql80-community && \
-#     dnf config-manager --enable mysql57-community
-
+# https://github.com/miyagawa/cpanminus/issues/534#issuecomment-295680508
 RUN dnf -y -q install epel-release  && \
 	dnf -y -q install `cat /rpm_list.clean` && \
     dnf clean all
