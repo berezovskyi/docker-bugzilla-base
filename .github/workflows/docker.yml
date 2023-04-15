@@ -25,5 +25,4 @@ jobs:
           key: ${{ runner.os }}-docker-${{ hashFiles('**/*.yml') }}
           restore-keys: |
             ${{ runner.os }}-docker-
-      - uses: docker
-        run: docker build ./bugzilla-1-base
+      - run: docker build ./bugzilla-1-base
