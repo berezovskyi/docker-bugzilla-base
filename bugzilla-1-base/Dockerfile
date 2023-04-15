@@ -40,6 +40,7 @@ RUN dnf -y -q install epel-release  && \
 RUN alternatives --set python /usr/bin/python3
 RUN pip3 install pip==20.2.4 
 # --ignore-installed due to pyparsing
+# https://stackoverflow.com/a/64132959/464590
 RUN pip3 install --upgrade --ignore-installed rst2pdf sphinx
 
 # Clone the code repo and install dependencies
