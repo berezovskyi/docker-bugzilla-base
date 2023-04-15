@@ -5,12 +5,13 @@
 # This Source Code Form is "Incompatible With Secondary Licenses", as
 # defined by the Mozilla Public License, v. 2.0.
 
-FROM centos:7
+# FROM centos:7
+FROM almalinux:8
 MAINTAINER David Lawrence <dkl@mozilla.com>
 
 # Environment configuration
 ENV BUGZILLA_LIB /opt/bugzilla
-ENV BUGZILLA_WWW /var/www/html/bugzilla
+ENV BUGZILLA_WWW /var/www/html/bugzilla 
 ENV GITHUB_BASE_GIT https://github.com/bugzilla/bugzilla
 ENV GITHUB_BASE_BRANCH master
 
@@ -21,22 +22,41 @@ COPY rpm_list /rpm_list
 RUN rpm -qa --queryformat '/^%{NAME}$/ d\n' > rpm_fix.sed && \
     sed -f rpm_fix.sed /rpm_list > /rpm_list.clean
 
-RUN yum -y -q install https://dev.mysql.com/get/mysql-community-release-el7-5.noarch.rpm && \
-	yum -y -q install epel-release  && \
-	yum -y -q install `cat /rpm_list.clean` && \
-    yum clean all
+# RUN yum -y -q install https://dev.mysql.com/get/mysql-community-release-el7-5.noarch.rpm && \
+# 	yum -y -q install epel-release  && \
+# 	yum -y -q install `cat /rpm_list.clean` && \
+#     yum clean all
 
-RUN pip install --upgrade pip rst2pdf sphinx
+# RUN dnf config-manager --disable mysql80-community && \
+#     dnf config-manager --enable mysql57-community
+
+RUN dnf -y -q install epel-release  && \
+	dnf -y -q install `cat /rpm_list.clean` && \
+    dnf clean all
+
+
+# 20.3 changed the resolver, 21 dropped Python 2.7 support
+# RUN alternatives --set python /usr/bin/python2.7
+RUN alternatives --set python /usr/bin/python3
+RUN pip3 install pip==20.2.4 
+# --ignore-installed due to pyparsing
+RUN pip3 install --upgrade --ignore-installed rst2pdf sphinx
 
 # Clone the code repo and install dependencies
 ENV INSTALL_CPANM "cpanm -l $BUGZILLA_LIB --quiet --skip-satisfied --notest"
-RUN git clone $GITHUB_BASE_GIT -b master $BUGZILLA_WWW && \
+# RUN git clone $GITHUB_BASE_GIT -b master $BUGZILLA_WWW && \
+#     cd $BUGZILLA_WWW && \
+#     $INSTALL_CPANM HTML::Formatter && \
+# 	$INSTALL_CPANM --installdeps --with-all-features --with-recommends --without-feature oracle . && \
+#     cd / && \
+# 	rm -rf $BUGZILLA_WWW ~/.cpanm
+RUN git clone $GITHUB_BASE_GIT -b 5.2 $BUGZILLA_WWW && \
     cd $BUGZILLA_WWW && \
     $INSTALL_CPANM HTML::Formatter && \
 	$INSTALL_CPANM --installdeps --with-all-features --with-recommends --without-feature oracle . && \
     cd / && \
 	rm -rf $BUGZILLA_WWW ~/.cpanm
-RUN git clone $GITHUB_BASE_GIT -b 5.0 $BUGZILLA_WWW && \
+RUN git clone $GITHUB_BASE_GIT -b 5.0.4 $BUGZILLA_WWW && \
     cd $BUGZILLA_WWW && \
     $INSTALL_CPANM --installdeps --with-all-features --with-recommends --without-feature oracle . && \
     cd / && \
